@@ -1,39 +1,81 @@
-# <h1 align="center"> Forge Template </h1>
+# PredicEVM
 
-**Template repository for getting started quickly with Foundry projects**
+PredicEVM is a decentralized price prediction platform built on EVM-compatible blockchains. Users can make predictions about price movements of various assets and earn rewards for accurate predictions.
 
-![Github Actions](https://github.com/foundry-rs/forge-template/workflows/CI/badge.svg)
+## Overview
 
-## Getting Started
+This smart contract allows users to participate in price prediction games by betting on different price movement ranges. The system uses Pyth Network oracles for reliable price feeds and implements a reward distribution mechanism for successful predictions.
 
-Click "Use this template" on [GitHub](https://github.com/foundry-rs/forge-template) to create a new repository with this repo as the initial state.
+## Features
 
-Or, if your repo already exists, run:
-```sh
-forge init
-forge build
-forge test
+- Multiple prediction ranges: 100/-90%, 50/-50%, 25/-25%, 10/-10%, 5/-5%, 3/-3%, and Sideways
+- Integration with Pyth Network for accurate price feeds
+- Automated reward distribution system
+- Signer-controlled administrative functions
+- Limit of 500 predictions per round
+
+## Contract Structure
+
+The main components of the system include:
+
+- `PredicCore`: The main contract handling predictions and rewards
+- `Prediction`: Struct containing prediction details (holder, amount, direction)
+- Price range functions for different percentage movements
+- Reward distribution mechanism
+
+## How It Works
+
+1. Users make predictions by calling the `predic()` function with:
+   - Amount to stake
+   - Direction of price movement (UpDown enum)
+
+2. When a round ends, the signer calls `reward()` which:
+   - Fetches the latest price from Pyth
+   - Calculates the percentage change
+   - Determines winners based on prediction ranges
+   - Distributes rewards to successful predictors
+
+## Usage
+
+### Prerequisites
+
+- An EVM-compatible blockchain
+- Pyth Network oracle integration
+- ERC20 token for prediction/reward actions
+
+### Deployment
+
+1. Deploy with required parameters:
+```solidity
+constructor(address _pyth, address _token)
 ```
 
-## Writing your first test
-
-All you need is to `import forge-std/Test.sol` and then inherit it from your test contract. Forge-std's Test contract comes with a pre-instatiated [cheatcodes environment](https://book.getfoundry.sh/cheatcodes/), the `vm`. It also has support for [ds-test](https://book.getfoundry.sh/reference/ds-test.html)-style logs and assertions. Finally, it supports Hardhat's [console.log](https://github.com/brockelmore/forge-std/blob/master/src/console.sol). The logging functionalities require `-vvvv`.
+### Making Predictions
 
 ```solidity
-pragma solidity 0.8.10;
-
-import "forge-std/Test.sol";
-
-contract ContractTest is Test {
-    function testExample() public {
-        vm.roll(100);
-        console.log(1);
-        emit log("hi");
-        assertTrue(true);
-    }
-}
+function prediction(uint _amount, UpDown _updown) external payable;
 ```
 
-## Development
+### Administrative Functions
 
-This project uses [Foundry](https://getfoundry.sh). See the [book](https://book.getfoundry.sh/getting-started/installation.html) for instructions on how to install and use Foundry.
+```solidity
+function setSigner(address _signer) external;
+function setIsActive(bool _isActive) external;
+function reward() external payable isSigner
+```
+
+## Security Considerations
+
+- Signer-controlled administrative functions
+- Price feed reliability through Pyth Network
+- Prediction limits to prevent overflow
+- Automated reward distribution
+
+## Dependencies
+
+- Solidity ^0.8.13
+- Pyth Network Oracle (@pythnetwork/pyth-sdk-solidity)
+
+## License
+
+This project is licensed under AGPL-3.0-or-later
