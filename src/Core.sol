@@ -1,10 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.13;
 
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@pythnetwork/pyth-sdk-solidity/IPyth.sol";
 import "@pythnetwork/pyth-sdk-solidity/PythStructs.sol";
 
 contract PredicCore {
+    using SafeERC20 for IERC20;
+
     enum UpDown {
         Up100,
         Up50,
@@ -70,10 +74,12 @@ contract PredicCore {
     function prediction(uint _amount, UpDown _updown) external payable noLock {
         if (predictions[msg.sender].amount == 0) {
             predictions[msg.sender] = (Prediction(_amount, _updown));
+            IERC20(token).safeTransferFrom(msg.sender, address(this), _amount);
         } else if (predictions[msg.sender].updown == _updown) {
             predictions[msg.sender] = (
                 Prediction(predictions[msg.sender].amount + _amount, _updown)
             );
+            IERC20(token).safeTransferFrom(msg.sender, address(this), _amount);
         } else {
             return;
         }
@@ -118,7 +124,12 @@ contract PredicCore {
     }
 
     function claimReward() external payable {
-        if (predictions[msg.sender].amount != 0) {}
+        if (predictions[msg.sender].amount != 0) {
+            IERC20(token).safeTransfer(
+                msg.sender,
+                (rangeAmount * predictions[msg.sender].amount) / totalRewards
+            );
+        }
     }
 
     function range100(int64 pourcentage) private {
