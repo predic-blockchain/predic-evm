@@ -114,12 +114,11 @@ contract PredicCore {
             60
         );
         price = priceData.price;
+        rangeAmounts[win] = totalRewards;
     }
 
     function claimReward() external payable {
-        if (predictions[msg.sender].amount != 0) {
-
-        }
+        if (predictions[msg.sender].amount != 0) {}
     }
 
     function range100(int64 pourcentage) private {
